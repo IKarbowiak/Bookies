@@ -3,10 +3,10 @@ from django.db import models
 
 
 class BookStatuses:
-    READ = 'read'
-    TO_READ = 'to_read'
+    READ = "read"
+    TO_READ = "to_read"
 
-    CHOICES = [(READ, 'Read'), (TO_READ, 'To read')]
+    CHOICES = [(READ, "Read"), (TO_READ, "To read")]
 
 
 class Rates:
@@ -22,7 +22,7 @@ class Book(models.Model):
     author = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True, blank=True)
     year = models.PositiveIntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    user = models.ManyToManyField(User, through='UserToBook')
+    user = models.ManyToManyField(User, through="UserToBook")
 
 
 class UserToBook(models.Model):
