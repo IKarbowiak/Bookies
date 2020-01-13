@@ -26,7 +26,7 @@ SECRET_KEY = "da$wa2=3vj46eq5+i$i7q(zoh07#za$_vai2ogr5mq&4a4rp)g"
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+ALLOWED_GRAPHQL_ORIGINS = os.environ.get("ALLOWED_GRAPHQL_ORIGINS", "*")
 
 # Application definition
 
@@ -58,7 +58,7 @@ ROOT_URLCONF = "bookies.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -133,3 +133,6 @@ if DEBUG_TOOLBAR:
     INTERNAL_IPS = ["127.0.0.1"]
     INSTALLED_APPS += ["debug_toolbar", "graphiql_debug_toolbar"]
     MIDDLEWARE += ["graphiql_debug_toolbar.middleware.DebugToolbarMiddleware"]
+
+# GoodReads keys
+GOODREADS_SECRET_KEY = os.environ.get("GOODREADS_SECRET_KEY")
