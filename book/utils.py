@@ -1,0 +1,65 @@
+import urllib
+from tempfile import NamedTemporaryFile
+
+import xmltodict
+from django.conf import settings
+from django.core.files import File
+
+from .models import Author, Book
+
+
+# there are more info in goodread like rating and author photo =
+def book_get_or_create(title: str, author: str) -> Book:
+    book = Book.objects.filter(title=title, author__name=author).first()
+    if book:
+        return Book
+    try:
+        book_data = get_book_details(title, author)
+    except Exception:
+        raise Exception("No book with this title and author.")
+
+    title = book_data["title"]
+    author = book_data["authors"]["author"][0]["name"]
+    cover_url = book_data.get("image_url")
+    publication_year = book_data.get("publication_year")
+    description = book_data.get("description")
+    number_of_pages = book_data.get("num_pages")
+
+    author_instance, _ = Author.objects.get_or_create(name=author)
+    book, _ = Book.objects.get_or_create(
+        title=title,
+        author=author_instance,
+        year=publication_year,
+        description=description,
+        number_of_pages=number_of_pages,
+    )
+
+    if cover_url:
+        add_cover_image_to_book(cover_url, book)
+
+    return book
+
+
+def get_book_details(title: str, author: str) -> dict:
+    key = settings.GOODREADS_SECRET_KEY
+    if not key:
+        raise Exception("You must specify GOODREADS_SECRET_KEY.")
+    title = title.replace(" ", "+")
+    author = author.replace(" ", "+")
+    goodereads_url = "https://www.goodreads.com/book/"
+    url = f"{goodereads_url}title.xml?author={author}&key={key}&title={title}"
+    file = urllib.request.urlopen(url)
+    xml_data = file.read()
+    file.close()
+
+    data = xmltodict.parse(xml_data)
+    book_data = data["GoodreadsResponse"]["book"]
+    return book_data
+
+
+def add_cover_image_to_book(cover_url: str, book: Book):
+    img_temp = NamedTemporaryFile(delete=True)
+    img_temp.write(urllib.request.urlopen(cover_url).read())
+    img_temp.flush()
+    book.cover.save(f"cover_{book.title}_{book.author.name}.png", File(img_temp))
+    book.save()
