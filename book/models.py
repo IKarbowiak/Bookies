@@ -27,9 +27,7 @@ class Book(models.Model):
     year = models.PositiveIntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     user = models.ManyToManyField(User, through="UserToBook")
-    cover = models.ImageField(
-        upload_to="book_covers/", null=True, blank=True
-    )  # maybe it should be changed to URLFIeld
+    cover = models.URLField(null=True, blank=True)
     number_of_pages = models.IntegerField(null=True, blank=True)
 
     class Meta:

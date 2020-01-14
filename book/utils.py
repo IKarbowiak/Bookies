@@ -1,9 +1,7 @@
 import urllib
-from tempfile import NamedTemporaryFile
 
 import xmltodict
 from django.conf import settings
-from django.core.files import File
 
 from .models import Author, Book
 
@@ -29,13 +27,11 @@ def book_get_or_create(title: str, author: str) -> Book:
     book, _ = Book.objects.get_or_create(
         title=title,
         author=author_instance,
+        cover=cover_url,
         year=publication_year,
         description=description,
         number_of_pages=number_of_pages,
     )
-
-    if cover_url:
-        add_cover_image_to_book(cover_url, book)
 
     return book
 
@@ -55,11 +51,3 @@ def get_book_details(title: str, author: str) -> dict:
     data = xmltodict.parse(xml_data)
     book_data = data["GoodreadsResponse"]["book"]
     return book_data
-
-
-def add_cover_image_to_book(cover_url: str, book: Book):
-    img_temp = NamedTemporaryFile(delete=True)
-    img_temp.write(urllib.request.urlopen(cover_url).read())
-    img_temp.flush()
-    book.cover.save(f"cover_{book.title}_{book.author.name}.png", File(img_temp))
-    book.save()
