@@ -6,15 +6,17 @@ from django.conf import settings
 from .models import Author, Book
 
 
+def format_enum_for_display(enum):
+    return enum.split(".")[1].lower()
+
+
 # there are more info in goodread like rating and author photo =
 def book_get_or_create(title: str, author: str) -> Book:
     book = Book.objects.filter(title=title, author__name=author).first()
     if book:
         return Book
-    try:
-        book_data = get_book_details(title, author)
-    except Exception:
-        raise Exception("No book with this title and author.")
+
+    book_data = get_book_details(title, author)
 
     title = book_data["title"]
     author = book_data["authors"]["author"][0]["name"]
@@ -42,11 +44,14 @@ def get_book_details(title: str, author: str) -> dict:
         raise Exception("You must specify GOODREADS_SECRET_KEY.")
     title = title.replace(" ", "+")
     author = author.replace(" ", "+")
-    goodereads_url = "https://www.goodreads.com/book/"
-    url = f"{goodereads_url}title.xml?author={author}&key={key}&title={title}"
-    file = urllib.request.urlopen(url)
-    xml_data = file.read()
-    file.close()
+    try:
+        goodereads_url = "https://www.goodreads.com/book/"
+        url = f"{goodereads_url}title.xml?author={author}&key={key}&title={title}"
+        file = urllib.request.urlopen(url)
+        xml_data = file.read()
+        file.close()
+    except Exception:
+        raise Exception("No book with this title and author.")
 
     data = xmltodict.parse(xml_data)
     book_data = data["GoodreadsResponse"]["book"]

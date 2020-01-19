@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     "book",
     "account",
     "graphene_django",
-    "graphql_playground",
 ]
 
 MIDDLEWARE = [
@@ -126,6 +125,8 @@ AUTHENTICATION_BACKENDS = [
     "graphql_jwt.backends.JSONWebTokenBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+TEST_RUNNER = "tests.runner.PytestTestRunner"
 
 # Debug Toolbar config
 DEBUG_TOOLBAR = DEBUG

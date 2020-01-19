@@ -1,11 +1,12 @@
 import graphene
+from django.core.exceptions import ObjectDoesNotExist
 
 from . import models
-from .types import Book, UserBookStatuses
+from .types import Book, UserBookStatuses, UserToBook
 from .utils import book_get_or_create
 
 
-class AddBookMutation(graphene.Mutation):
+class AddBook(graphene.Mutation):
     book = graphene.Field(Book)
 
     class Arguments:
@@ -22,7 +23,7 @@ class AddBookMutation(graphene.Mutation):
     def mutate(cls, root, info, title, author, status, **data):
         user = info.context.user
         if user.is_anonymous:
-            raise Exception("You muest be logged in to perform this action.")
+            raise Exception("You must be logged in to perform this action.")
 
         rate = data.get("rate")
         if rate:
@@ -39,7 +40,7 @@ class AddBookMutation(graphene.Mutation):
         user_book.rate = rate if rate else None
         user_book.save()
 
-        return AddBookMutation(book)
+        return AddBook(book)
 
     @staticmethod
     def validate_rate(rate):
@@ -49,3 +50,41 @@ class AddBookMutation(graphene.Mutation):
             raise Exception("Rate must mu number value.")
         if rate < 1 or rate > 10:
             raise Exception("Rate value must be between 1 and 10")
+
+
+class BookDelete(graphene.Mutation):
+    book = graphene.Field(Book)
+
+    class Arguments:
+        id = graphene.ID(description="ID of book to delete.", required=True)
+
+    @classmethod
+    def mutate(cls, root, info, id, **data):
+        only_type, pk = graphene.Node.from_global_id(id)
+        try:
+            book = models.Book.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            raise Exception(f"Book with id {id} does not exists.")
+        book.delete()
+        return BookDelete(book)
+
+
+class UserBookDelete(graphene.Mutation):
+    user_book = graphene.Field(UserToBook)
+
+    class Arguments:
+        id = graphene.ID(description="ID of user book to delete.", required=True)
+
+    @classmethod
+    def mutate(cls, root, info, id, **data):
+        # TODO: create base mutation and move this checking there
+        only_type, pk = graphene.Node.from_global_id(id)
+        user = info.context.user
+        if user.is_anonymous:
+            raise Exception("You must be logged in to perform this action.")
+        try:
+            user_book = models.UserToBook.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            raise Exception(f"User book with id {id} does not exists.")
+        user_book.delete()
+        return UserBookDelete(user_book)
