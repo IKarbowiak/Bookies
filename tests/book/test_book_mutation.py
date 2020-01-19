@@ -1,6 +1,4 @@
 import graphene
-from bookies.schema import schema
-from graphene.test import Client
 
 BOOK_DELETE_MUTATION = """
     mutation BookDelete($id: ID!){
@@ -19,8 +17,7 @@ BOOK_DELETE_MUTATION = """
 """
 
 
-def test_delete_book_mutation(book):
-    client = Client(schema)
+def test_delete_book_mutation(book, client):
     variables = {"id": graphene.Node.to_global_id("Book", book.pk)}
     response = client.execute(BOOK_DELETE_MUTATION, variables=variables)
 
@@ -50,10 +47,9 @@ USER_BOOK_DELETE_MUTATION = """
 """
 
 
-def test_delete_user_book_mutation(user_to_book, rq_authenticated):
+def test_delete_user_book_mutation(user_to_book, rq_authenticated, client):
     book = user_to_book.book
 
-    client = Client(schema)
     variables = {"id": graphene.Node.to_global_id("UserToBook", user_to_book.pk)}
     response = client.execute(
         USER_BOOK_DELETE_MUTATION, variables=variables, context=rq_authenticated

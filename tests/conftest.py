@@ -1,7 +1,15 @@
 import pytest
 from book.models import Author, Book, BookStatuses, UserToBook
+from bookies.schema import schema
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.sessions.middleware import SessionMiddleware
+from graphene.test import Client
+
+
+@pytest.fixture
+def client():
+    client = Client(schema)
+    return client
 
 
 @pytest.fixture

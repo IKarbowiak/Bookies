@@ -1,10 +1,10 @@
 import graphene
 import graphql_jwt
 from account.schema import AccountMutation, AccountQueries
-from book.schema import BookMutation
+from book.schema import BookMutation, BookQueries
 
 
-class Query(AccountQueries, graphene.ObjectType):
+class Query(AccountQueries, BookQueries, graphene.ObjectType):
     pass
 
 
