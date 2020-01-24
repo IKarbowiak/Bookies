@@ -7,10 +7,12 @@ from .models import Author, Book
 
 
 def format_enum_for_display(enum):
+    if "." not in enum:
+        return enum
     return enum.split(".")[1].lower()
 
 
-# there are more info in goodread like rating and author photo =
+# there are more info in goodread like rating and author photos
 def book_get_or_create(title: str, author: str) -> Book:
     book = Book.objects.filter(title=title, author__name=author).first()
     if book:

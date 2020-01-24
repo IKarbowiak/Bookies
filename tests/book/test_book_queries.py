@@ -1,5 +1,5 @@
 import graphene
-from book.models import Book
+from book.models import Book, UserToBook
 
 BOOKS_QUERY = """
     query Books($author: String, $orderBy: String){
@@ -53,3 +53,44 @@ def test_book_query(book, client):
     assert data["title"] == book.title
     assert data["author"]["name"] == book.author.name
     assert data["description"] == book.description
+
+
+USER_BOOKS_QUERY = """
+    query {
+        userBooks {
+            book{
+                id
+                title
+            }
+            status
+        }
+    }
+"""
+
+
+def test_user_book_query(book, user_to_book, client, rq_authenticated):
+    user_to_book2 = UserToBook.objects.get(pk=user_to_book.pk)
+    user_to_book2.id = None
+    user_to_book2.title = "Other book"
+    user_to_book2.save()
+
+    response = client.execute(USER_BOOKS_QUERY, context=rq_authenticated)
+
+    data = response["data"]["userBooks"]
+
+    assert len(data) == 2
+
+
+def test_user_book_query_not_log_in(book, user_to_book, client, rq_anonymous):
+    user_to_book2 = UserToBook.objects.get(pk=user_to_book.pk)
+    user_to_book2.id = None
+    user_to_book2.title = "Other book"
+    user_to_book2.save()
+
+    response = client.execute(USER_BOOKS_QUERY, context=rq_anonymous)
+
+    assert response["errors"]
+    assert (
+        response["errors"][0]["message"]
+        == "You must be logged in to perform this action."
+    )
