@@ -19,7 +19,7 @@ class Author(DjangoObjectType):
 @key(fields="id")
 class Book(DjangoObjectType):
     author = graphene.Field(Author, description="The author of the book.")
-    description = graphene.String(description="Book desription.")
+    description = graphene.String(description="Book description.")
     cover = graphene.String(description="Url to book cover.")
 
     class Meta:
@@ -41,13 +41,18 @@ class Book(DjangoObjectType):
 class UserToBook(DjangoObjectType):
     book = graphene.Field(Book)
     status = UserBookStatuses()
+    rate = graphene.Int()
 
     class Meta:
         model = models.UserToBook
-        fields = ("id", "status", "rate", "book")
+        fields = ("status", "rate", "book", "id")
+        interfaces = (graphene.Node,)
 
     def resolve_book(root, info, **kwargs):
         return root.book
 
     def resolve_status(root, info, **kwargs):
         return UserBookStatuses.get(format_enum_for_display(root.status))
+
+    def resolve_rate(root, info, **kwargs):
+        return root.rate

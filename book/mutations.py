@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from . import models
 from .types import Book, UserBookStatuses, UserToBook
-from .utils import book_get_or_create
+from .utils import book_get_or_create, validate_rate
 
 
 class AddBook(graphene.Mutation):
@@ -27,7 +27,7 @@ class AddBook(graphene.Mutation):
 
         rate = data.get("rate")
         if rate:
-            cls.validate_rate(rate)
+            validate_rate(rate)
 
         book = book_get_or_create(title, author)
 
@@ -41,15 +41,6 @@ class AddBook(graphene.Mutation):
         user_book.save()
 
         return AddBook(book)
-
-    @staticmethod
-    def validate_rate(rate):
-        try:
-            rate = int(rate)
-        except ValueError:
-            raise Exception("Rate must mu number value.")
-        if rate < 1 or rate > 10:
-            raise Exception("Rate value must be between 1 and 10")
 
 
 class BookDelete(graphene.Mutation):
@@ -77,14 +68,52 @@ class UserBookDelete(graphene.Mutation):
 
     @classmethod
     def mutate(cls, root, info, id, **data):
-        # TODO: create base mutation and move this checking there
+        # TODO: create base mutation and move this checking there or write decorator
         only_type, pk = graphene.Node.from_global_id(id)
         user = info.context.user
         if user.is_anonymous:
             raise Exception("You must be logged in to perform this action.")
         try:
-            user_book = models.UserToBook.objects.get(pk=pk)
+            user_book = models.UserToBook.objects.get(pk=pk, user=user)
         except ObjectDoesNotExist:
             raise Exception(f"User book with id {id} does not exists.")
         user_book.delete()
         return UserBookDelete(user_book)
+
+
+class UserBookUpdate(graphene.Mutation):
+    user_book = graphene.Field(UserToBook)
+
+    class Arguments:
+        id = graphene.ID(description="ID of user book to update.")
+        status = graphene.Argument(
+            UserBookStatuses,
+            description="Information if book is already read or not.",
+            required=False,
+        )
+        rate = graphene.Int(description="Rate of the book.", required=False)
+
+    @classmethod
+    def mutate(cls, root, info, id, **data):
+        only_type, pk = graphene.Node.from_global_id(id)
+        user = info.context.user
+        if user.is_anonymous:
+            raise Exception("You must be logged in to perform this action.")
+        try:
+            user_book = models.UserToBook.objects.get(pk=pk, user=user)
+        except ObjectDoesNotExist:
+            raise Exception(f"User book with id {id} does not exists.")
+
+        cls.update_user_book(user_book, data)
+        return cls(user_book=user_book)
+
+    @staticmethod
+    def update_user_book(user_book, data):
+        status = data.get("status")
+        rate = data.get("rate")
+        if status:
+            user_book.status = status
+        if rate:
+            validate_rate(rate)
+            user_book.rate = rate
+        user_book.save()

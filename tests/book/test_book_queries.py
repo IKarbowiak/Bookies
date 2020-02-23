@@ -58,17 +58,19 @@ def test_book_query(book, client):
 USER_BOOKS_QUERY = """
     query {
         userBooks {
+            id
             book{
                 id
                 title
             }
             status
+            rate
         }
     }
 """
 
 
-def test_user_book_query(book, user_to_book, client, rq_authenticated):
+def test_user_books_query(book, user_to_book, client, rq_authenticated):
     user_to_book2 = UserToBook.objects.get(pk=user_to_book.pk)
     user_to_book2.id = None
     user_to_book2.title = "Other book"
@@ -81,13 +83,57 @@ def test_user_book_query(book, user_to_book, client, rq_authenticated):
     assert len(data) == 2
 
 
-def test_user_book_query_not_log_in(book, user_to_book, client, rq_anonymous):
+def test_user_books_query_not_log_in(book, user_to_book, client, rq_anonymous):
     user_to_book2 = UserToBook.objects.get(pk=user_to_book.pk)
     user_to_book2.id = None
     user_to_book2.title = "Other book"
     user_to_book2.save()
 
     response = client.execute(USER_BOOKS_QUERY, context=rq_anonymous)
+
+    assert response["errors"]
+    assert (
+        response["errors"][0]["message"]
+        == "You must be logged in to perform this action."
+    )
+
+
+USER_BOOK_QUERY = """
+    query($id: ID!) {
+        userBook(id: $id) {
+            id
+            book{
+                id
+                title
+            }
+            status
+            rate
+        }
+    }
+"""
+
+
+def test_user_book_query(user_to_book, client, rq_authenticated):
+    book = user_to_book.book
+    variables = {"id": graphene.Node.to_global_id("UserToBook", user_to_book.pk)}
+
+    response = client.execute(
+        USER_BOOK_QUERY, variables=variables, context=rq_authenticated
+    )
+
+    data = response["data"]["userBook"]
+
+    assert data["status"] == user_to_book.status.name.upper()
+    assert data["rate"] == user_to_book.rate
+    assert data["book"]["title"] == book.title
+
+
+def test_user_book_query_not_log_in(user_to_book, client, rq_anonymous):
+    variables = {"id": graphene.Node.to_global_id("UserToBook", user_to_book.pk)}
+
+    response = client.execute(
+        USER_BOOK_QUERY, variables=variables, context=rq_anonymous
+    )
 
     assert response["errors"]
     assert (
