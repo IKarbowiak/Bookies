@@ -3,12 +3,12 @@ from graphene_django.filter import DjangoFilterConnectionField
 
 from . import models
 from .filters import BookFilter
-from .mutations import AddBook, BookDelete, UserBookDelete, UserBookUpdate
+from .mutations import AddUserBook, BookDelete, UserBookDelete, UserBookUpdate
 from .types import Book, UserToBook
 
 
 class BookMutation(graphene.ObjectType):
-    add_book = AddBook.Field()
+    add_user_book = AddUserBook.Field()
     user_book_delete = UserBookDelete.Field()
     user_book_update = UserBookUpdate.Field()
     book_delete = BookDelete.Field()

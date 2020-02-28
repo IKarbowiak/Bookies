@@ -58,12 +58,3 @@ def get_book_details(title: str, author: str) -> dict:
     data = xmltodict.parse(xml_data)
     book_data = data["GoodreadsResponse"]["book"]
     return book_data
-
-
-def validate_rate(rate):
-    try:
-        rate = int(rate)
-    except ValueError:
-        raise Exception("Rate must mu number value.")
-    if rate < 1 or rate > 10:
-        raise Exception("Rate value must be between 1 and 10")

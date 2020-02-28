@@ -2,11 +2,12 @@ import graphene
 from django.core.exceptions import ObjectDoesNotExist
 
 from . import models
+from .graphql_utils import login_required, validate_rate
 from .types import Book, UserBookStatuses, UserToBook
-from .utils import book_get_or_create, validate_rate
+from .utils import book_get_or_create
 
 
-class AddBook(graphene.Mutation):
+class AddUserBook(graphene.Mutation):
     book = graphene.Field(Book)
 
     class Arguments:
@@ -20,11 +21,9 @@ class AddBook(graphene.Mutation):
         rate = graphene.Int(description="Rate of the book.", required=False)
 
     @classmethod
+    @login_required
     def mutate(cls, root, info, title, author, status, **data):
         user = info.context.user
-        if user.is_anonymous:
-            raise Exception("You must be logged in to perform this action.")
-
         rate = data.get("rate")
         if rate:
             validate_rate(rate)
@@ -40,7 +39,7 @@ class AddBook(graphene.Mutation):
         user_book.rate = rate if rate else None
         user_book.save()
 
-        return AddBook(book)
+        return AddUserBook(book)
 
 
 class BookDelete(graphene.Mutation):
@@ -67,12 +66,10 @@ class UserBookDelete(graphene.Mutation):
         id = graphene.ID(description="ID of user book to delete.", required=True)
 
     @classmethod
+    @login_required
     def mutate(cls, root, info, id, **data):
-        # TODO: create base mutation and move this checking there or write decorator
         only_type, pk = graphene.Node.from_global_id(id)
         user = info.context.user
-        if user.is_anonymous:
-            raise Exception("You must be logged in to perform this action.")
         try:
             user_book = models.UserToBook.objects.get(pk=pk, user=user)
         except ObjectDoesNotExist:
@@ -94,11 +91,10 @@ class UserBookUpdate(graphene.Mutation):
         rate = graphene.Int(description="Rate of the book.", required=False)
 
     @classmethod
+    @login_required
     def mutate(cls, root, info, id, **data):
         only_type, pk = graphene.Node.from_global_id(id)
         user = info.context.user
-        if user.is_anonymous:
-            raise Exception("You must be logged in to perform this action.")
         try:
             user_book = models.UserToBook.objects.get(pk=pk, user=user)
         except ObjectDoesNotExist:

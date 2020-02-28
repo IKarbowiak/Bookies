@@ -63,6 +63,19 @@ def test_delete_user_book_mutation(user_to_book, rq_authenticated, client):
     assert data["status"] == user_to_book.status.name
 
 
+def test_delete_user_book_mutation_not_logged_in(user_to_book, rq_anonymous, client):
+    variables = {"id": graphene.Node.to_global_id("UserToBook", user_to_book.pk)}
+    response = client.execute(
+        USER_BOOK_DELETE_MUTATION, variables=variables, context=rq_anonymous
+    )
+
+    data = response["data"]["userBookDelete"]
+    errors = response["errors"]
+    assert errors
+    assert not data
+    assert errors[0]["message"] == "You must be logged in to perform this action."
+
+
 USER_BOOK_UPDATE_MUTATION = """
     mutation UserBookUpdate($id: ID!, $status: BookStatuses!, $rate: Int!){
             userBookUpdate(id: $id, status: $status, rate: $rate){
@@ -129,3 +142,20 @@ def test_user_book_update_mutation_wrong_rate(user_to_book, rq_authenticated, cl
     errors = response["errors"]
     assert errors
     assert errors[0]["message"] == "Rate value must be between 1 and 10"
+
+
+def test_user_book_update_mutation_not_logged_in(user_to_book, rq_anonymous, client):
+    new_status = BookStatuses.READ.name
+    rate = 11
+    variables = {
+        "id": graphene.Node.to_global_id("UserToBook", user_to_book.pk),
+        "status": new_status,
+        "rate": rate,
+    }
+    response = client.execute(
+        USER_BOOK_UPDATE_MUTATION, variables=variables, context=rq_anonymous
+    )
+
+    errors = response["errors"]
+    assert errors
+    assert errors[0]["message"] == "You must be logged in to perform this action."
