@@ -3,6 +3,8 @@ from enum import Enum
 from django.contrib.auth.models import User
 from django.db import models
 
+from .permissions import BookPermissions
+
 
 class BookStatuses(Enum):
     READ = "read"
@@ -32,6 +34,7 @@ class Book(models.Model):
 
     class Meta:
         unique_together = ("title", "author")
+        permissions = ((BookPermissions.MANAGE_BOOKS.codename, "Manage books."),)
 
     def __str__(self):
         return f"{self.title} - {self.author.name}"
