@@ -1,7 +1,7 @@
 import pytest
 from book.models import Author, Book, BookStatuses, UserToBook
 from bookies.schema import schema
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.sessions.middleware import SessionMiddleware
 from graphene.test import Client
 
@@ -58,3 +58,8 @@ def user_to_book(user, book):
     return UserToBook.objects.create(
         user=user, book=book, rate=5, status=BookStatuses.READ
     )
+
+
+@pytest.fixture
+def manage_books_permission():
+    return Permission.objects.get(codename="manage_books")

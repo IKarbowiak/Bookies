@@ -1,13 +1,15 @@
 import graphene
+from core.graphql_utils import login_required, validate_rate
+from core.mutations import BaseMutation
 from django.core.exceptions import ObjectDoesNotExist
 
 from . import models
-from .graphql_utils import login_required, validate_rate
+from .permissions import BookPermissions
 from .types import Book, UserBookStatuses, UserToBook
 from .utils import book_get_or_create
 
 
-class AddUserBook(graphene.Mutation):
+class AddUserBook(BaseMutation):
     book = graphene.Field(Book)
 
     class Arguments:
@@ -22,34 +24,39 @@ class AddUserBook(graphene.Mutation):
 
     @classmethod
     @login_required
-    def mutate(cls, root, info, title, author, status, **data):
+    def perform_mutation(cls, root, info, **data):
         user = info.context.user
         rate = data.get("rate")
         if rate:
             validate_rate(rate)
 
-        book = book_get_or_create(title, author)
+        book = book_get_or_create(data["title"], data["author"])
 
         user_book, created = models.UserToBook.objects.get_or_create(
             user=user, book=book
         )
         if not created:
             raise Exception("This book is added to this user already.")
-        user_book.status = status
+        user_book.status = data["status"]
         user_book.rate = rate if rate else None
         user_book.save()
 
         return AddUserBook(book)
 
 
-class BookDelete(graphene.Mutation):
+class BookDelete(BaseMutation):
     book = graphene.Field(Book)
+
+    class Meta:
+        description = "Delete book."
+        permissions = (BookPermissions.MANAGE_BOOKS.value,)
 
     class Arguments:
         id = graphene.ID(description="ID of book to delete.", required=True)
 
     @classmethod
-    def mutate(cls, root, info, id, **data):
+    def perform_mutation(cls, root, info, **data):
+        id = data["id"]
         only_type, pk = graphene.Node.from_global_id(id)
         try:
             book = models.Book.objects.get(pk=pk)
@@ -59,7 +66,7 @@ class BookDelete(graphene.Mutation):
         return BookDelete(book)
 
 
-class UserBookDelete(graphene.Mutation):
+class UserBookDelete(BaseMutation):
     user_book = graphene.Field(UserToBook)
 
     class Arguments:
@@ -67,7 +74,8 @@ class UserBookDelete(graphene.Mutation):
 
     @classmethod
     @login_required
-    def mutate(cls, root, info, id, **data):
+    def perform_mutation(cls, root, info, **data):
+        id = data["id"]
         only_type, pk = graphene.Node.from_global_id(id)
         user = info.context.user
         try:
@@ -78,7 +86,7 @@ class UserBookDelete(graphene.Mutation):
         return UserBookDelete(user_book)
 
 
-class UserBookUpdate(graphene.Mutation):
+class UserBookUpdate(BaseMutation):
     user_book = graphene.Field(UserToBook)
 
     class Arguments:
@@ -92,7 +100,8 @@ class UserBookUpdate(graphene.Mutation):
 
     @classmethod
     @login_required
-    def mutate(cls, root, info, id, **data):
+    def perform_mutation(cls, root, info, **data):
+        id = data["id"]
         only_type, pk = graphene.Node.from_global_id(id)
         user = info.context.user
         try:

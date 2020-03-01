@@ -18,9 +18,12 @@ BOOK_DELETE_MUTATION = """
 """
 
 
-def test_delete_book_mutation(book, client):
+def test_delete_book_mutation(book, client, manage_books_permission, rq_authenticated):
+    rq_authenticated.user.user_permissions.add(manage_books_permission)
     variables = {"id": graphene.Node.to_global_id("Book", book.pk)}
-    response = client.execute(BOOK_DELETE_MUTATION, variables=variables)
+    response = client.execute(
+        BOOK_DELETE_MUTATION, variables=variables, context=rq_authenticated
+    )
 
     data = response["data"]["bookDelete"]["book"]
 
