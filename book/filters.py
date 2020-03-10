@@ -1,19 +1,16 @@
-from django_filters import CharFilter, FilterSet, OrderingFilter
+from django_filters import CharFilter, FilterSet, NumberFilter, OrderingFilter
 
 from . import models
 
 
-def search_author(qs, _, value):
-    if value:
-        return qs.filter(author__name__icontains=value)
-    return qs
-
-
-# TODO: allow to filter with icontains, not only exact
 class BookFilter(FilterSet):
     order_by = OrderingFilter(fields=("title", "year"))
-    author = CharFilter(method=search_author)
+    author = CharFilter(field_name="author__name", lookup_expr="icontains")
+    title = CharFilter(field_name="title", lookup_expr="icontains")
+    year = NumberFilter(field_name="year")
+    year_gte = NumberFilter(field_name="year", lookup_expr="gte")
+    year_lte = NumberFilter(field_name="year", lookup_expr="lte")
 
     class Meta:
         model = models.Book
-        fields = ["title", "year", "author"]
+        fields = ["author", "title", "year", "year_gte", "year_lte"]
