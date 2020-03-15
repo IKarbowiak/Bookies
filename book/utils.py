@@ -1,9 +1,8 @@
 import urllib
 
 import xmltodict
+from book.models import Author, Book
 from django.conf import settings
-
-from .models import Author, Book
 
 
 # there are more info in goodread like rating and author photos

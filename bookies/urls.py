@@ -1,10 +1,9 @@
+from bookies import settings
+from bookies.schema import schema
+from bookies.views import GraphQLView
 from django.contrib import admin
 from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
-
-from . import settings
-from .schema import schema
-from .views import GraphQLView
 
 urlpatterns = [
     path("admin/", admin.site.urls),

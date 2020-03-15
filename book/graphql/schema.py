@@ -1,10 +1,14 @@
 import graphene
+from book import models
+from book.graphql.filters import BookFilter
+from book.graphql.mutations import (
+    AddUserBook,
+    BookDelete,
+    UserBookDelete,
+    UserBookUpdate,
+)
+from book.graphql.types import Book, UserToBook
 from graphene_django.filter import DjangoFilterConnectionField
-
-from .. import models
-from .filters import BookFilter
-from .mutations import AddUserBook, BookDelete, UserBookDelete, UserBookUpdate
-from .types import Book, UserToBook
 
 
 class BookMutation(graphene.ObjectType):

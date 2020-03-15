@@ -1,9 +1,8 @@
 from enum import Enum
 
+from book.permissions import BookPermissions
 from django.contrib.auth.models import User
 from django.db import models
-
-from .permissions import BookPermissions
 
 
 class BookStatuses(Enum):

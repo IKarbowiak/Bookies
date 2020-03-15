@@ -1,6 +1,5 @@
+from book import models
 from django_filters import CharFilter, FilterSet, NumberFilter, OrderingFilter
-
-from .. import models
 
 
 class BookFilter(FilterSet):
