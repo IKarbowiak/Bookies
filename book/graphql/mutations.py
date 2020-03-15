@@ -1,12 +1,12 @@
 import graphene
-from core.graphql_utils import login_required, validate_rate
-from core.mutations import BaseMutation
+from core.graphql.mutations import BaseMutation
+from core.graphql.utils import login_required, validate_rate
 from django.core.exceptions import ObjectDoesNotExist
 
-from . import models
-from .permissions import BookPermissions
+from .. import models
+from ..permissions import BookPermissions
+from ..utils import book_get_or_create
 from .types import Book, UserBookStatuses, UserToBook
-from .utils import book_get_or_create
 
 
 class AddUserBook(BaseMutation):

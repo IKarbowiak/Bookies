@@ -1,9 +1,9 @@
 import graphene
+from core.utils import format_enum_for_display
 from graphene_django.types import DjangoObjectType
 from graphene_federation import key
 
-from . import models
-from .utils import format_enum_for_display
+from .. import models
 
 UserBookStatuses = graphene.Enum.from_enum(models.BookStatuses)
 

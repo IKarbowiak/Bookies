@@ -1,7 +1,7 @@
 import graphene
 from graphene_django.filter import DjangoFilterConnectionField
 
-from . import models
+from .. import models
 from .filters import BookFilter
 from .mutations import AddUserBook, BookDelete, UserBookDelete, UserBookUpdate
 from .types import Book, UserToBook

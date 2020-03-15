@@ -1,7 +1,7 @@
 import graphene
 import graphql_jwt
-from account.schema import AccountMutation, AccountQueries
-from book.schema import BookMutation, BookQueries
+from account.graphql.schema import AccountMutation, AccountQueries
+from book.graphql.schema import BookMutation, BookQueries
 
 
 class Query(AccountQueries, BookQueries, graphene.ObjectType):
