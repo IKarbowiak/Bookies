@@ -13,3 +13,11 @@ repos:
     rev: v4.3.21
     hooks:
       - id: isort
+-   repo: local
+    hooks:
+    -   id: missing-migrations
+        language: system
+        name: Check for uncreated migrations.
+        entry: sh -c "./manage.py makemigrations --check --dry-run"
+        files: "models\\.py$"
+        stages: [commit]
