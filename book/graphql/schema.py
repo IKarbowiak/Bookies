@@ -27,7 +27,9 @@ class BookQueries(graphene.ObjectType):
     books = DjangoFilterConnectionField(Book, filterset_class=BookFilter)
     user_book = graphene.Field(
         UserToBook,
-        id=graphene.ID(graphene.ID, description="ID of user book.", required=True),
+        id=graphene.Argument(
+            graphene.ID, description="ID of user book.", required=True
+        ),
         description="Look up a user book by ID.",
     )
     user_books = graphene.List(UserToBook, description="List of user books.")
