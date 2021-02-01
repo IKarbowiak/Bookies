@@ -4,7 +4,7 @@ import traceback
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponseNotAllowed, JsonResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.functional import SimpleLazyObject
 from django.views.generic import View
@@ -60,7 +60,7 @@ class GraphQLView(View):
         # Handle options method the GraphQlView restricts it.
         if request.method == "GET":
             if settings.DEBUG:
-                return render_to_response("graphql/playground.html")
+                return render(request, "graphql/playground.html", {})
             return HttpResponseNotAllowed(["OPTIONS", "POST"])
 
         if request.method == "OPTIONS":
@@ -75,6 +75,7 @@ class GraphQLView(View):
         response[
             "Access-Control-Allow-Headers"
         ] = "Origin, Content-Type, Accept, Authorization"
+        response["Access-Control-Allow-Credentials"] = "true"
         return response
 
     def handle_query(self, request: HttpRequest):
