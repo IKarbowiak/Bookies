@@ -138,4 +138,4 @@ if DEBUG_TOOLBAR:
     MIDDLEWARE += ["graphiql_debug_toolbar.middleware.DebugToolbarMiddleware"]
 
 # GoodReads keys
-GOODREADS_SECRET_KEY = os.environ.get("GOODREADS_SECRET_KEY")
+GOOGLE_BOOKS_API_SECRET_KEY = os.environ.get("GOOGLE_BOOKS_API_SECRET_KEY")
