@@ -8,7 +8,7 @@ backcall==0.2.0
 cfgv==3.2.0
 decorator==4.4.2
 distlib==0.3.1
-Django==3.1.6
+Django==3.1.8
 django-debug-toolbar==3.2
 django-filter==2.4.0
 django-graphiql-debug-toolbar==0.1.4
