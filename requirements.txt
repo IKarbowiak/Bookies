@@ -9,7 +9,7 @@ cfgv==3.2.0
 decorator==4.4.2
 distlib==0.3.1
 Django==3.1.6
-django-debug-toolbar==3.2
+django-debug-toolbar==3.2.1
 django-filter==2.4.0
 django-graphiql-debug-toolbar==0.1.4
 django-graphql-jwt==0.3.1
